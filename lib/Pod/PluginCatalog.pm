@@ -34,6 +34,21 @@ use Text::Template ();
 
 #=====================================================================
 
+=attr namespace_rewriter
+
+This is a coderef to a function that takes one argument (a plugin
+name) and returns the corresponding module name.  (required)
+
+=attr pod_formatter
+
+This is a coderef to a function that takes one argument (a string
+containing POD) and returns the string formatted as it should appear
+in the output.  That can be HTML or any other format.  The string is
+guaranteed to start with a POD command paragraph.
+(required)
+
+=cut
+
 has namespace_rewriter => (
   is       => 'ro',
   isa      => 'CodeRef',
@@ -46,7 +61,7 @@ has pod_formatter => (
   required => 1,
 );
 
-has plugins => (
+has _plugins => (
   is      => 'ro',
   isa     => 'HashRef[Pod::PluginCatalog::Entry]',
   default => sub { {} },
@@ -103,6 +118,23 @@ sub _build_nester
   });
 }
 
+=attr delimiters
+
+This is an arrayref of two strings: the opening and closing delimiters
+for L<Text::Template>.  (default C<{{ }}>)
+
+=attr file_extension
+
+This suffix is appended to the tag name to form the filename for each
+generated page.  (default C<.html>)
+
+=attr perlio_layers
+
+This string contains the PerlIO layers to be used when opening files
+for output.  (default C<:utf8>)
+
+=cut
+
 has delimiters => (
   is   => 'ro',
   isa  => 'ArrayRef',
@@ -133,6 +165,14 @@ sub _err
 } # end _err
 #---------------------------------------------------------------------
 
+=method add_file
+
+  $catalog->add_file($filename);
+
+This is just a wrapper around C<add_document> to read a file on disk.
+
+=cut
+
 sub add_file
 {
   my ($self, $filename) = @_;
@@ -141,11 +181,20 @@ sub add_file
 } # end add_file
 #---------------------------------------------------------------------
 
+=method add_document
+
+  $catalog->add_document($name => $doc);
+
+This adds a L<Pod::Elemental::Document> to the catalog.  The C<$name>
+is used for error messages.  May be called multiple times.
+
+=cut
+
 sub add_document
 {
   my ($self, $source, $doc) = @_;
 
-  my $plugins  = $self->plugins;
+  my $plugins  = $self->_plugins;
   my $tags     = $self->_tags;
   my $rewriter = $self->namespace_rewriter;
   my $author_selector = $self->_author_selector;
@@ -206,6 +255,33 @@ sub format_description
 } # end format_description
 #---------------------------------------------------------------------
 
+=method generate_tag_pages
+
+  $catalog->generate_tag_pages($header, $entry, $footer);
+
+This generates a file for each tag in the catalog.  It generates the
+filenames by appending the L</file_extension> to each tag name.
+
+C<$header>, C<$entry>, and C<$footer> are strings to be passed to
+L<Text::Template> using the L</delimiters>.
+
+The C<$header> and C<$footer> templates can refer to the following
+variables:
+
+  $tag              The name of the tag being processed
+  $tag_description  The description of that tag (may be undef)
+
+The C<$entry> template is printed once for each plugin.  In addition
+to the previous variables, it may also use these:
+
+  $author       The author of this plugin (may be undef)
+  $name         The name of this plugin
+  $module       The module name of the plugin
+  $description  The description of the plugin
+  @other_tags   The tags for this plugin (not including $tag)
+
+=cut
+
 sub generate_tag_pages
 {
   my ($self, $header, $template, $footer) = @_;
@@ -229,7 +305,7 @@ sub generate_tag_page
 
   my @plugins = sort { $a->name cmp $b->name }
                 grep { $_->has_tag($tag) }
-                values %{ $self->plugins };
+                values %{ $self->_plugins };
 
   unless (@plugins) {
     warn "No plugins for tag $tag\n";
@@ -258,6 +334,31 @@ sub generate_tag_page
   close $out;
 } # end generate_tag_page
 #---------------------------------------------------------------------
+
+=method generate_index_page
+
+  $catalog->generate_index_page($header, $entry, $footer);
+
+This generates an index file listing each tag in the catalog.
+The filename will be C<index> with the L</file_extension> appended.
+
+C<$header>, C<$entry>, and C<$footer> are strings to be passed to
+L<Text::Template> using the L</delimiters>.
+
+The C<$header> and C<$footer> templates can refer to the following
+variables (so that you can use the same header & footer for
+C<generate_tag_pages> if you want to):
+
+  $tag              Will be undef
+  $tag_description  Will be undef
+
+The C<$entry> template is printed once for each tag.  In addition
+to the previous variables, it may also use these:
+
+  $tag          The tag being listed (no longer undef)
+  $description  The description of that tag
+
+=cut
 
 sub generate_index_page
 {
@@ -320,3 +421,24 @@ __END__
 =head1 SYNOPSIS
 
   use Pod::PluginCatalog;
+
+  my $catalog = Pod::PluginCatalog->new(
+    namespace_rewriter => sub { ... },
+    pod_formatter      => sub { ... },
+  );
+
+  $catalog->add_file('catalog.pod');
+
+  $catalog->generate_tag_pages($header, $entry, $footer);
+  $catalog->generate_index_page($header, $entry, $footer);
+
+=head1 DESCRIPTION
+
+This module aids in formatting a tag-based catalog of plugins.  It
+was written to create the catalog at L<http://dzil.org/plugins/> but
+should also be useful for similar catalogs.
+
+=for Pod::Coverage
+compile_templates
+format_description
+generate_tag_page

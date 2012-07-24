@@ -25,6 +25,30 @@ our $VERSION = '0.01';
 
 #=====================================================================
 
+=attr name
+
+The plugin name (required)
+
+=attr module
+
+The plugin's module (a.k.a. package) name (required)
+
+=attr description
+
+The plugin's description (required, but could be the empty string)
+
+=attr author
+
+The plugin author's CPAN ID (optional)
+
+=attr tags
+
+The list of tags for this plugin (required).
+Note: when setting this, you pass an arrayref, but when reading it,
+you get a list.
+
+=cut
+
 has name => (
   is       => 'ro',
   isa      => 'Str',
@@ -64,6 +88,16 @@ has _tags => (
   },
 );
 
+=method other_tags
+
+  @tags = $entry->other_tags($current_tag);
+
+This is just a shortcut for
+
+  @tags = grep { $_ ne $current_tag } $entry->tags;
+
+=cut
+
 sub other_tags
 {
   my ($self, $tag) = @_;
@@ -91,3 +125,10 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 __END__
+
+=head1 DESCRIPTION
+
+This class represents a plugin in a L<Pod::PluginCatalog>.
+
+=for Pod::Coverage
+BUILD

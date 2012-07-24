@@ -1,7 +1,7 @@
 Pod-PluginCatalog version {{$version}}, released {{$date}}
 
 
-This module aids in formatting a tag-based collection of plugins.  It
+This module aids in formatting a tag-based catalog of plugins.  It
 was written to create the catalog at http://dzil.org/plugins/ but
 should also be useful for similar catalogs.
 
