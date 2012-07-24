@@ -1,7 +1,9 @@
 Pod-PluginCatalog version {{$version}}, released {{$date}}
 
 
-This module {{ die "needs a description (README.md too)" }}.
+This module aids in formatting a tag-based collection of plugins.  It
+was written to create the catalog at http://dzil.org/plugins/ but
+should also be useful for similar catalogs.
 
 
 

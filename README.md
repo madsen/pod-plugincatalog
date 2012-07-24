@@ -1,7 +1,7 @@
 Pod-PluginCatalog
 =================
 
-Pod-PluginCatalog is a Perl module that NEEDS A DESCRIPTION.
+Pod-PluginCatalog is a Perl module that aids in formatting a tag-based collection of plugins.  It was written to create the catalog at <http://dzil.org/plugins/> but should also be useful for similar catalogs.
 
 This is a Git repository where development of Pod-PluginCatalog takes place.  For more information, visit [Pod-PluginCatalog on CPAN](http://search.cpan.org/dist/Pod-PluginCatalog/).
 

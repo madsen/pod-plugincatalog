@@ -6,6 +6,7 @@ META.yml
 Makefile.PL
 README
 lib/Pod/PluginCatalog.pm
+lib/Pod/PluginCatalog/Entry.pm
 t/00-all_prereqs.t
 t/00-load.t
 t/release-pod-coverage.t
