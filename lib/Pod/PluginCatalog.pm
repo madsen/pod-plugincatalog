@@ -121,7 +121,7 @@ sub _build_nester
 =attr delimiters
 
 This is an arrayref of two strings: the opening and closing delimiters
-for L<Text::Template>.  (default C<{{ }}>)
+for L<Text::Template>.  (default C<< {{'{{ }}'}} >>)
 
 =attr file_extension
 
@@ -423,8 +423,16 @@ __END__
   use Pod::PluginCatalog;
 
   my $catalog = Pod::PluginCatalog->new(
-    namespace_rewriter => sub { ... },
-    pod_formatter      => sub { ... },
+    namespace_rewriter => sub { 'My::Plugin::Namespace::' . shift },
+    pod_formatter => sub {
+      my $parser = Pod::Simple::XHTML->new;
+      $parser->output_string(\my $html);
+      $parser->html_header('');
+      $parser->html_footer('');
+      $parser->perldoc_url_prefix("https://metacpan.org/module/");
+      $parser->parse_string_document( shift );
+      $html;
+    },
   );
 
   $catalog->add_file('catalog.pod');
@@ -437,6 +445,57 @@ __END__
 This module aids in formatting a tag-based catalog of plugins.  It
 was written to create the catalog at L<http://dzil.org/plugins/> but
 should also be useful for similar catalogs.
+
+The catalog begins with one or more POD files defining the available
+plugins and the tags used to categorize them.  You load each file into
+the catalog with the C<add_file> method, and then call the
+C<generate_tag_pages> and C<generate_index_page> methods to produce a
+formatted page for each tag and an index page listing all the tags.
+
+=for Pod::Loom-insert_after
+DESCRIPTION
+EXTENDED POD SYNTAX
+
+=head1 EXTENDED POD SYNTAX
+
+This module defines three non-standard POD command paragraphs used to
+create the catalog:
+
+=head2 C<=author>
+
+  =author CPANID
+
+This sets the author for all following plugins (until the next
+C<=author>).  If CPANID is omitted, it resets the author to the
+default (which is no listed author, represented by C<undef>).
+
+=head2 C<=plugin>
+
+  =plugin PluginName tagname tagname...
+
+This paragraph defines a plugin and associates it with the specifed
+tags.  Neither PluginName nor the tag names may contain whitespace,
+because the paragraph content is simply C<split(' ', ...)>.  The first
+element is the name, and the rest are the tags.  (This means that a
+single newline is equivalent to a space.)
+
+The following paragraphs (if any) form the description of the
+plugin.  The description may include ordinary paragraphs, verbatim
+(indented) paragraphs, and the commands C<=head3>, C<=head4>,
+C<=over>, C<=item>, and C<=back>.
+
+=head2 C<=tag>
+
+  =tag tagname
+
+This defines a tag.  The following paragraphs (if any) form the
+description of the tag (using the same rules as a plugin's
+description).
+
+You'll get a warning if any plugin uses a tag that was not defined by
+a C<=tag> command, or if any tag is defined but never used by any
+plugin.  (The warnings are generated only when you output the results;
+the order C<=tag> and C<=plugin> occur doesn't matter.)
 
 =for Pod::Coverage
 compile_templates
