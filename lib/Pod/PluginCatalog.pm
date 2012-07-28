@@ -442,9 +442,15 @@ __END__
 
 =head1 DESCRIPTION
 
+B<Warning:> This is still early code, not yet in production.
+The API might change.
+
 This module aids in formatting a tag-based catalog of plugins.  It
 was written to create the catalog at L<http://dzil.org/plugins/> but
 should also be useful for similar catalogs.
+(That catalog is not yet live as of this writing; a preview is at
+L<http://dzil.cjmweb.net/plugins/> and the code that generates it at
+L<https://github.com/madsen/dzil.org/tree/plugin-catalog>.)
 
 The catalog begins with one or more POD files defining the available
 plugins and the tags used to categorize them.  You load each file into
