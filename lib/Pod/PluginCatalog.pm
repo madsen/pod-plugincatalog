@@ -21,7 +21,7 @@ use 5.010;
 use Moose;
 use namespace::autoclean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 # This file is part of {{$dist}} {{$dist_version}} ({{$date}})
 
 use autodie ':io';

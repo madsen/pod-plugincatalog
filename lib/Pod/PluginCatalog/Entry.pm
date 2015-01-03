@@ -20,7 +20,7 @@ package Pod::PluginCatalog::Entry;
 use 5.010;
 use Moose;
 
-our $VERSION = '0.01';
+#VERSION
 # This file is part of {{$dist}} {{$dist_version}} ({{$date}})
 
 #=====================================================================
